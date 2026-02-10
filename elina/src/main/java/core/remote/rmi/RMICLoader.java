@@ -12,7 +12,7 @@ public class RMICLoader extends RMIClassLoaderSpi {
 	public Class<?> loadClass(String codebase, String name,
 			ClassLoader defaultLoader) throws MalformedURLException,
 			ClassNotFoundException {
-		Class<?> aux =sun.rmi.server.LoaderHandler.loadClass(codebase, name,CLoader.getClassLoader(Thread.currentThread()));
+		Class<?> aux = sun.rmi.server.LoaderHandler.loadClass(codebase, name,CLoader.getClassLoader(Thread.currentThread()));
 		return aux;
 	}
 

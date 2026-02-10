@@ -12,3 +12,12 @@ dependencies {
     implementation 'org.ow2.asm:asm-commons:4.0'
     implementation("org.kohsuke.metainf-services:metainf-services:1.11")
 }
+
+
+compileJava {
+    options.compilerArgs.add('--add-exports=java.rmi/sun.rmi.registry=ALL-UNNAMED')
+    options.compilerArgs.add('--add-exports=java.rmi/sun.rmi.server=ALL-UNNAMED')
+    options.compilerArgs.add('--add-exports=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED')
+}
+
+

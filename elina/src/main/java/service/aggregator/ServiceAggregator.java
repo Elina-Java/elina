@@ -23,12 +23,10 @@ public class ServiceAggregator {
 		for (int i = 0; i < out.length; i++) {
 			try {
 				out[i] = (I) service.newInstance();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
+			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
-		}
+        }
 		return (I[]) out;
 	}
 	

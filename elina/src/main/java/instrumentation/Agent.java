@@ -58,7 +58,7 @@ implements ClassFileTransformer{
 			// protected method invocaton
 			method.setAccessible(true);
 			try {
-				Object[] args = new Object[] { className, b, new Integer(0), new Integer(b.length)};
+				Object[] args = new Object[] { className, b, 0, b.length};
 				clazz = (Class<?>) method.invoke(loader, args);
 			} finally {
 				method.setAccessible(false);
@@ -213,7 +213,7 @@ implements ClassFileTransformer{
 	@SuppressWarnings("unused")
 	private MethodNode copy(MethodNode method) {
 		@SuppressWarnings("unchecked")
-		String[] exceptions = (String[]) method.exceptions.toArray(new String[method.exceptions.size()]); 
+		String[] exceptions = (String[]) method.exceptions.toArray(new String[0]);
 		MethodNode result = new MethodNode(method.access, method.name, method.desc, method.signature, exceptions) {
 			/**
 			 * Label remapping.

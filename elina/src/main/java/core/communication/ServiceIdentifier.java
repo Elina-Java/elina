@@ -40,7 +40,7 @@ public class ServiceIdentifier implements Serializable{
 			try {
 				Class<?> cl = Thread.currentThread().getContextClassLoader().loadClass(type);
 				
-				return cl.newInstance();
+				return cl.getDeclaredConstructor().newInstance();
 			} catch (Exception e2) {
 				return null;
 			}

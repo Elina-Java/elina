@@ -8,6 +8,7 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 import java.util.UUID;
 
 import core.CLoader;
@@ -94,7 +95,7 @@ public final class ClusterServer implements IServerInterface {
 	
 	public void addClassLoader(UUID clientID,IRemoteClassLoader remoteClassLoader, String[] classPath) throws RemoteException{
 		if(Elina.DEBUG)
-			logger.debug(ClusterServer.class, "Add ClassLoader [Client ID "+clientID+"] - classPath: " + classPath);
+			logger.debug(ClusterServer.class, "Add ClassLoader [Client ID "+clientID+"] - classPath: " + Arrays.toString(classPath));
 		
 		try {
 			Elina.addClassLoader(clientID, remoteClassLoader, classPath);

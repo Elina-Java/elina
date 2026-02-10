@@ -31,7 +31,7 @@ public class ServiceRegistry implements Registry {
 	/**
 	 * The registry map
 	 */
-	private HashMap<String, ServiceStub> registry = new HashMap<String, ServiceStub>();
+	private final HashMap<String, ServiceStub> registry = new HashMap<>();
 	
 	
 	ServiceRegistry() throws ConfigurationException, IOException {

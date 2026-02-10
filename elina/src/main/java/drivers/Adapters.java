@@ -1,6 +1,7 @@
 package drivers;
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,8 +16,7 @@ public class Adapters {
 	/* drivers a utilizar */
 	private static CloningDriver cloner;
 	private static MonitorDriver monitorFactory;
-	@SuppressWarnings("rawtypes")
-	private static Map<Level,DomainDecompositionDriver> distRed = new HashMap<Level, DomainDecompositionDriver>();
+	private static final Map<Level,DomainDecompositionDriver> distRed = new HashMap<Level, DomainDecompositionDriver>();
 	private static CommunicationDriver commDriver;
 	private static SchedulingAdapter schDriver;
 	private static SchedulingRankAdapter schRankDriver;
@@ -42,7 +42,6 @@ public class Adapters {
 	private static int nworkers;
 	private static Class<?> taskClass;
 
-	@SuppressWarnings("rawtypes")
 	public static void selectdrivers(Configuration conf) {
 
 		try {
@@ -51,7 +50,7 @@ public class Adapters {
 			// Mandatory adapters
 
 			cl = Class.forName(conf.getLogger());
-			logger = (Logger) cl.newInstance();
+			logger = (Logger) cl.getDeclaredConstructor().newInstance();
 			
 			
 			
@@ -117,37 +116,37 @@ public class Adapters {
 			
 			if(copy!=null){
 				cl = Class.forName(copy);
-				cloner = (CloningDriver) cl.newInstance();
+				cloner = (CloningDriver) cl.getDeclaredConstructor().newInstance();
 			}
 
 			if(barrier!=null){
 				cl = Class.forName(monitor);
-				monitorFactory = (MonitorDriver) cl.newInstance();
+				monitorFactory = (MonitorDriver) cl.getDeclaredConstructor().newInstance();
 			}
 			
 			if(barrier!=null){
 				cl = Class.forName(barrier);
-				barrierFactory = (BarrierDriver) cl.newInstance();
+				barrierFactory = (BarrierDriver) cl.getDeclaredConstructor().newInstance();
 			}
 
 			if(comm!=null){
 				cl = Class.forName(comm);
-				commDriver = (CommunicationDriver) cl.newInstance();
+				commDriver = (CommunicationDriver) cl.getDeclaredConstructor().newInstance();
 			}
 
 			for (Entry<Level, String> e : mr.entrySet()) {
 				cl = Class.forName(e.getValue());
-				distRed.put(e.getKey(), (DomainDecompositionDriver) cl.newInstance());
+				distRed.put(e.getKey(), (DomainDecompositionDriver) cl.getDeclaredConstructor().newInstance());
 			}
 			
 			if(sch!=null){
 				cl=Class.forName(sch);
-				schDriver=(SchedulingAdapter)cl.newInstance();
+				schDriver=(SchedulingAdapter)cl.getDeclaredConstructor().newInstance();
 			}
 			
 			if(schrank!=null){
 				cl=Class.forName(schrank);
-				schRankDriver=(SchedulingRankAdapter)cl.newInstance();
+				schRankDriver=(SchedulingRankAdapter)cl.getDeclaredConstructor().newInstance();
 			}
 			
 			
@@ -157,15 +156,14 @@ public class Adapters {
 			System.out.println("Class not found: "+e.getMessage());
 			// e.printStackTrace();
 			System.exit(0);
-		} catch (InstantiationException e) {
+		} catch (InstantiationException | IllegalAccessException e) {
 			// e.printStackTrace();
 			System.exit(0);
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
+		} catch (InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
 
-	}
+    }
 
 	public static MonitorDriver getMonitorDriver() {
 		return monitorFactory;
@@ -197,7 +195,6 @@ public class Adapters {
 		return partitioningDriver;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <R> DomainDecompositionDriver getDomainDecompositionDriver(Level l) {
 		return distRed.get(l);
 	}
