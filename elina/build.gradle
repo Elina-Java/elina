@@ -1,0 +1,6 @@
+apply plugin: "java"
+
+dependencies {
+
+    implementation 'javax.jws:javax.jws-api:1.1'
+}

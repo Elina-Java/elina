@@ -1,0 +1,36 @@
+<package>
+
+<imports>
+
+/*GENERATED CLASS - DO NOT EDIT*/
+
+import instrumentation.definitions.Generated;
+import service.SOMDTask;
+
+@Generated
+public class <task_name> extends SOMDTask<<type>> {
+
+	private static final long serialVersionUID = 1L;
+	private <parent> parent;
+	<params_fields>
+	
+	public <task_name>(<params>){
+		<params_init>
+	}
+	
+	@Override
+	public void setService(service.IService service) {
+		super.setService(service);
+		if(service instanceof <parent>)
+			this.parent=(<parent>)service;
+		else
+			this.parent=null;
+	}
+
+	@Override
+	public <type> call(Object[] partition) {
+		this.parent=(<parent>)this.service;
+		<code>
+	}
+
+}

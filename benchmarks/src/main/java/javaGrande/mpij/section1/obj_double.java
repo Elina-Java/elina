@@ -1,0 +1,13 @@
+package javaGrande.mpij.section1;
+import java.io.Serializable;
+
+class obj_double implements Serializable {
+
+  double x;
+
+  public obj_double(double x) {
+   this.x = x;
+  }
+
+}
+

@@ -1,0 +1,6 @@
+cracs: 
+	procs: 4 x Six-Core AMD Opteron(tm) Processor 8425 HE
+	siblings: 0,4,8,12,16,20, 1,5,9,13,17,21, 2,6,10,14,18,22, 3,7,11,15,19,23
+		L3 - 5118K - partilhada por 6 cores: 0,4,8,12,16,20  :  1,5,9,13,17,21 : 2,6,10,14,18,22 : 3,7,11,15,19,23 	
+		L2 - 512k - dedicada	
+		L1 - 64K - dedicada

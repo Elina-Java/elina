@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="sable" 
+								xmlns="sable" elementFormDefault="qualified">
+								
+								
+	<!-- Nós -->							
+	<xs:complexType name="nodes">
+		<xs:sequence>
+			<xs:element name="node" type="node" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="node">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="port" type="xs:integer" use="optional" default="9090"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	
+	
+	<!-- Logging drivers -->
+	<xs:simpleType name="logging_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="logging.Log4J"/>
+		</xs:restriction>
+	</xs:simpleType>
+										
+	<!-- Communication drivers -->
+	<xs:complexType name="comm_driver">
+		<xs:simpleContent>
+			<xs:extension base="com_drivers">
+				<xs:attribute name="port" type="xs:integer" use="optional" default="9090"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	
+	<xs:simpleType name="com_drivers">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="communication.MPIBased"/>
+			<xs:enumeration value="communication.FakeCom"/>
+			<xs:enumeration value="communication.NIOCom"/>
+			<xs:enumeration value="communication.NIOprofiiling"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	
+	<!-- Synchronization drivers -->
+	<xs:simpleType name="sync_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="synchronization.MonitorDriverLock"/>
+			<xs:enumeration value="synchronization.MonitorDriverSTM"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	
+	<!-- Barreiras -->
+	<xs:simpleType name="sync_barrier">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="synchronization.JavaBarrier"/>
+			<xs:enumeration value="synchronization.PhaserBarrier"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Copy drivers -->
+	<xs:simpleType name="copy_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="cloning.DeepCopy"/>
+			<xs:enumeration value="cloning.ShallowCopy"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Consistency model driver -->
+	<xs:simpleType name="consistency_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="consistency.strict"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Distribution-Reduction driver -->
+	<xs:complexType name="distrRed_driver">
+		<xs:choice>
+			<xs:element name="distrReduce" type="distrRed_driver_simple" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="domainDecomposition_levels" type="distrRed_driver_level" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:simpleType name="distrRed_driver_simple">
+		<xs:restriction base="xs:string">
+ 	    <xs:enumeration value="domainDecomposition.Flat2DDomainDecomposer"/>
+            <xs:enumeration value="domainDecomposition.FlatDomainDecomposer"/>
+            <xs:enumeration value="domainDecomposition.HierarchicalDomainDecomposer"/>
+            <xs:enumeration value="domainDecomposition.DebugFlatDomainDecomposer"/>
+            <xs:enumeration value="domainDecomposition.DebugHierarchicalDomainDecomposer"/>
+            <xs:enumeration value="domainDecomposition.DebugFlat2DDomainDecomposer"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:complexType name="distrRed_driver_level">
+		<xs:simpleContent>
+			<xs:extension base="distrRed_driver_simple">
+				<xs:attribute name="level" type="levels" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+
+	<xs:simpleType name="aggregation_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="aggregation.ContiguousScheduler"/>
+            <xs:enumeration value="aggregation.ChunkedScheduler"/>
+            <xs:enumeration value="aggregation.SiblingRoundRobinScheduler"/>
+            <xs:enumeration value="aggregation.RoundRobinScheduler"/>
+            <xs:enumeration value="aggregation.DebugContiguousScheduler"/>
+            <xs:enumeration value="aggregation.DebugChunkedScheduler"/>
+            <xs:enumeration value="aggregation.DebugSiblingRoundRobinScheduler"/>
+            <xs:enumeration value="aggregation.DebugRoundRobinScheduler"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	
+	<!-- Scheduling drivers -->
+	<xs:complexType name="scheduling_driver">
+		<xs:simpleContent>
+			<xs:extension base="scheduling_drivers">
+				<xs:attribute name="rank" type="sch_rank_driver" use="required"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	
+	<xs:simpleType name="scheduling_drivers">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="scheduling.Local"/>
+			<xs:enumeration value="scheduling.RoundRobin"/>
+			<xs:enumeration value="scheduling.AggregatorSch"/>
+			<!-- 
+			<xs:enumeration value="scheduling.round-robin"/>
+			<xs:enumeration value="scheduling.FirstNode"/>
+			 -->
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="sch_rank_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="scheduling.rank.LocalRank"/>
+			<xs:enumeration value="scheduling.rank.RandomRank"/>
+			<xs:enumeration value="scheduling.rank.LexicalRank"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!-- TaskExecutor driver -->
+	<xs:complexType name="taskExecutor_driver">
+		<xs:simpleContent>
+			<xs:extension base="taskExecutor_drivers">
+				<xs:attribute use="required" name="nWorkers" type="xs:integer"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	
+	<xs:simpleType name="taskExecutor_drivers">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="TaskExecutor.TaskExecutorPoolThreads"/>
+			<xs:enumeration value="TaskExecutor.TaskExecutorPoolThreadsSeparate"/>
+			<xs:enumeration value="TaskExecutor.TaskExecutorScheduler"/>
+			<xs:enumeration value="TaskExecutor.TaskExecutorForkJoin"/>
+            <xs:enumeration value="TaskExecutor.TaskParallelTaskExecutor"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	
+	<xs:simpleType name="hierarchyReader_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="hierarchy.readers.HierarchyReadImpl"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	
+	<xs:simpleType name="partitioner_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="partitioners.L1IterativePartitioner"/>
+            <xs:enumeration value="partitioners.L2IterativePartitioner"/>
+            <xs:enumeration value="partitioners.L3IterativePartitioner"/>
+            <xs:enumeration value="partitioners.L1LAIterativePartitioner"/>
+            <xs:enumeration value="partitioners.L2LAIterativePartitioner"/>
+            <xs:enumeration value="partitioners.L3LAIterativePartitioner"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+
+	<xs:simpleType name="affinity_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="affinity.AllAffinity"/>
+			<xs:enumeration value="affinity.JStackParsingSiblingAffinity"/>
+            <xs:enumeration value="affinity.DebugAllAffinity"/>
+            <xs:enumeration value="affinity.DebugJStackParsingSiblingAffinity"/>
+            <xs:enumeration value="affinity.VerboseJStackParsingSiblingAffinity"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+
+	<!-- Debugging -->
+	<xs:simpleType name="debugging_driver">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="debuggers.DistRedDebugger"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Niveis -->
+	<xs:simpleType name="levels">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Node"/>
+			<xs:enumeration value="Cluster"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

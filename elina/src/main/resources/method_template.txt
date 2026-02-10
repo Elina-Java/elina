@@ -1,0 +1,8 @@
+	<modifiers> <type_parameters> <return_type> <name> (<params>) <throws> {
+		try{
+			service.IFuture<<Return_type>> aux = this.invoke("<name>",new Object[]{<params_vars>},new Class[]{<params_types>});
+			<return>	
+		}catch (service.NoSuchMethodException e) {
+			<return_default>
+		}
+	}

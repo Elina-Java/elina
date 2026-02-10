@@ -1,0 +1,104 @@
+/*******************************************************************************
+ * Copyright (c) 2010,
+ *   The Board of Trustees of The Leland Stanford Junior University
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * 
+ * 3. The names of the contributors may not be used to endorse or promote
+ * products derived from this software without specific prior written
+ * permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ ******************************************************************************/
+
+#include "sgemv.h"
+#include "../../external/include/sq_cstdio.h"
+#include "../../external/include/sq_ctime.h"
+
+bool verify(float* y1, float* y2, unsigned int M);
+
+int main()
+{
+	const unsigned int M = 8192;
+	const unsigned int N = 4096;
+	float numOps = 2. * (float)N * (float)M;
+	float numXfer = sizeof(float) * ((float)M * (float)N + 3. * (float)N);
+	sq_microsecond_t start_usec, end_usec, sequoia_usec;
+
+	float** a = new float*[M];
+	for ( unsigned int i = 0; i < M; i++ )
+		a[i] = new float[N];
+
+	for ( unsigned int i = 0; i < M; i++ )
+		for ( unsigned int j = 0; j < N; j++ )
+			a[i][j] = static_cast<float>((i*N+j) % 17);
+
+	float* x = new float[N];
+	for ( unsigned int i = 0; i < N; i++ )
+		x[i] = static_cast<float>(i % 19);
+
+	float* y1 = new float[M];
+	float* y2 = new float[M];
+	for ( unsigned int i = 0; i < M; i++ )
+		y1[i] = y2[i] = 10.0 + static_cast<float>(i % 13);
+
+	float alpha = 2.0;
+
+	start_usec = sq_gettimeofday();
+	sgemv(a, x, y1, alpha);
+	end_usec = sq_gettimeofday();
+	sequoia_usec = end_usec - start_usec;
+        sq_printf("Sequoia total sgemv running time: %.4f usec -- %.4f GFLOPS"
+                " -- %.4f GB/s\n",
+                sequoia_usec,
+                sq_compute_gflops_from_usec(numOps, (float)sequoia_usec),
+                sq_compute_gbsec_from_usec(numXfer, (float)sequoia_usec));
+
+	reference(a, x, y2, M, N, alpha);
+	
+	if ( verify(y1, y2, M) )
+		sq_printf("SUCCESS: Sequoia implementation matches reference implementation!\n");
+	else
+		sq_printf("ERROR: Sequoia implementation does not match reference implementation!\n");
+		
+	for ( unsigned int i = 0; i < M; i++ )
+		delete [] a[i];
+	delete [] a;
+	
+	delete [] x;
+	delete [] y1;
+	delete [] y2;
+
+	return 0;
+}
+
+bool verify(float* y1, float* y2, unsigned int M)
+{
+	for ( unsigned int i = 0; i < M; i++ )
+		if ( y1[i] != y2[i] )
+		{
+			sq_printf("y1[%d] = %f != y2[%d] = %f\n", i, y1[i], i, y2[i]);
+			return false;
+		}
+
+	return true;	
+}

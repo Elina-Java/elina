@@ -1,0 +1,181 @@
+/*******************************************************************************
+ * Copyright (c) 2010,
+ *   The Board of Trustees of The Leland Stanford Junior University
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * 
+ * 3. The names of the contributors may not be used to endorse or promote
+ * products derived from this software without specific prior written
+ * permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ ******************************************************************************/
+
+#include "md.h"
+
+#include "../../external/include/sq_cmath.h"
+
+#include "constants.h"
+
+void run(Float3* pos, Float3* vel, float* mass, int nSteps)
+{
+	Float3* accelOld = new Float3[ARRAY_SIZE];
+	Float3* accelCur = new Float3[ARRAY_SIZE];
+	
+	md(pos, vel, mass, accelCur, accelOld, nSteps);
+	
+	delete [] accelOld;
+	delete [] accelCur;
+}
+
+task<inner> void arrayInit(inout Float3 array[N])
+{
+	tunable r;
+	mappar ( int i = 0 : (N+r-1)/r )
+		arrayInit(array[i*r;r]);
+}
+
+task<leaf> void arrayInit(inout Float3 array[N])
+{
+	for ( unsigned int i = 0; i < N; ++i )
+	{
+		array[i].x = 0.0;
+		array[i].y = 0.0;
+		array[i].z = 0.0;
+	}
+}
+
+task<inner> void accel(in Float3 pos1[N], in Float3 pos2[N], in float mass1[N], in float mass2[N],
+	in unsigned int blockIndex1, in unsigned int blockIndex2, in unsigned int blockCount, inout Float3 Accel[N])
+{
+	tunable r;
+	mappar ( unsigned int i = 0 : (N+r-1)/r )
+		mapseq ( unsigned int j = 0 : (N+r-1)/r )
+			accel(pos1[i*r;r], pos2[i*r;r], mass1[i*r;r], mass2[i*r;r], 
+				blockIndex1*blockCount + i, blockIndex2*blockCount + j, blockCount*N/r, Accel[i*r;r]);
+}
+
+task<leaf> void accel(in Float3 pos1[N], in Float3 pos2[N], in float mass1[N], in float mass2[N],
+	in unsigned int blockIndex1, in unsigned int blockIndex2, in unsigned int blockCount, inout Float3 Accel[N])
+{
+	if ( blockIndex1 == blockIndex2 )
+		for ( unsigned int i = 0; i < N; ++i )
+			for ( unsigned int j = i + 1; j < N; ++j )
+			{
+				Float3 r;
+				r.x = pos1[i].x - pos2[j].x;
+				r.y = pos1[i].y - pos2[j].y;
+				r.z = pos1[i].z - pos2[j].z;
+				
+				float rinv = 1.0 / sq_sqrt(r.x*r.x + r.y*r.y + r.z*r.z + EPS);
+				float rinv3 = rinv * rinv * rinv;
+				
+				Accel[i].x -= mass1[j]*rinv3*r.x;
+				Accel[i].y -= mass1[j]*rinv3*r.y;
+				Accel[i].z -= mass1[j]*rinv3*r.z;
+				
+				Accel[j].x += mass1[i]*rinv3*r.x;
+				Accel[j].y += mass1[i]*rinv3*r.y;
+				Accel[j].z += mass1[i]*rinv3*r.z;
+			}
+	else
+		for ( unsigned int i = 0; i < N; ++i )
+			for ( unsigned int j = 0; j < N; ++j )
+			{
+				Float3 r;
+				r.x = pos1[i].x - pos2[j].x;
+				r.y = pos1[i].y - pos2[j].y;
+				r.z = pos1[i].z - pos2[j].z;
+				
+				float rinv = 1.0 / sq_sqrt(r.x*r.x + r.y*r.y + r.z*r.z + EPS);
+				float rinv3 = rinv * rinv * rinv;
+				
+				Accel[i].x -= mass2[j]*rinv3*r.x;
+				Accel[i].y -= mass2[j]*rinv3*r.y;
+				Accel[i].z -= mass2[j]*rinv3*r.z;
+			}		
+}
+
+task<inner> void posUpdate(inout Float3 pos[N], in Float3 vel[N], in Float3 accel[N])
+{
+	tunable r;
+	mappar ( int i = 0 : (N+r-1)/r )
+		posUpdate(pos[i*r;r], vel[i*r;r], accel[i*r;r]);
+}
+
+task<leaf> void posUpdate(inout Float3 pos[N], in Float3 vel[N], in Float3 accel[N])
+{
+	for ( unsigned int i = 0; i < N; ++i )
+	{
+		pos[i].x += DELTA_T * (vel[i].x + 0.5 * DELTA_T * accel[i].x);
+		pos[i].y += DELTA_T * (vel[i].y + 0.5 * DELTA_T * accel[i].y);
+		pos[i].z += DELTA_T * (vel[i].z + 0.5 * DELTA_T * accel[i].z);
+	}
+}
+
+task<inner> void velUpdate(inout Float3 vel[N], in Float3 accel[N], in Float3 accelOld[N])
+{
+	tunable r;
+	mappar ( int i = 0 : (N+r-1)/r ) 
+		velUpdate(vel[i*r;r], accel[i*r;r], accelOld[i*r;r]);
+}
+
+task<leaf> void velUpdate(inout Float3 vel[N], in Float3 accel[N], in Float3 accelOld[N])
+{
+	for ( unsigned int i = 0; i < N; ++i )
+	{
+		vel[i].x += 0.5 * DELTA_T * (accel[i].x + accelOld[i].x);
+		vel[i].y += 0.5 * DELTA_T * (accel[i].y + accelOld[i].y);
+		vel[i].z += 0.5 * DELTA_T * (accel[i].z + accelOld[i].z);
+	}
+}
+
+task<inner> void copyKernel(out Float3 accelOld[N], in Float3 accelNew[N])
+{
+	tunable r;
+	mappar ( int i = 0 : (N+r-1)/r )
+		copyKernel(accelOld[i*r;r], accelNew[i*r;r]);
+}
+
+task<leaf> void copyKernel(out Float3 accelOld[N], in Float3 accelNew[N])
+{
+	for ( unsigned int i = 0; i < N; ++i )
+		accelOld[i] = accelNew[i];
+}
+
+task<inner> void mainLoop(inout Float3 pos[N], inout Float3 vel[N], in float mass[N], inout Float3 accelOld[N], inout Float3 accelCur[N])
+{
+	posUpdate(pos, vel, accelCur);
+	copyKernel(accelOld, accelCur);
+	arrayInit(accelCur);
+	accel(pos, pos, mass, mass, 0.0, 0.0, 1.0, accelCur);
+	velUpdate(vel, accelCur, accelOld);
+}
+
+task<inner> void md(inout Float3 pos[N], inout Float3 vel[N], in float mass[N], inout Float3 accelOld[N], inout Float3 accelCur[N], in int nSteps)
+{
+	arrayInit(accelCur);
+	accel(pos, pos, mass, mass, 0.0, 0.0, 1.0, accelCur);
+	
+	mapseq ( int i = 1 : nSteps+1 )
+		mainLoop(pos, vel, mass, accelOld, accelCur);
+}

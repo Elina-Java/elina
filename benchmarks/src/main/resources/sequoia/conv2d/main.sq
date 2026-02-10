@@ -1,0 +1,130 @@
+/*******************************************************************************
+ * Copyright (c) 2010,
+ *   The Board of Trustees of The Leland Stanford Junior University
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * 
+ * 3. The names of the contributors may not be used to endorse or promote
+ * products derived from this software without specific prior written
+ * permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ ******************************************************************************/
+
+#include "conv2d.h"
+
+#include "../../external/include/sq_cstdlib.h"
+#include "../../external/include/sq_cstdio.h"
+#include "../../external/include/sq_ctime.h"
+
+bool verify(float** c1, float** c2, unsigned int N, unsigned int M);
+
+int main()
+{
+	const unsigned int N = 8192;
+	const unsigned int M = 4096;
+	const unsigned int S = 4096;
+	const unsigned int T = 4096;
+
+	const unsigned int U = 9;
+	const unsigned int V = 9;
+
+	float numOps = 2. * (float)N * (float)M * (float)U * (float)V;
+	float numXfer = (float)(sizeof(float)) 
+		* ( N*M + U*V + (N/S)*(M/T)*(S+U-1)*(T+V-1));
+	sq_microsecond_t sequoia_usec, start_usec, end_usec;
+
+	float** a = new float*[N+U-1];
+	for ( unsigned int i = 0; i < N+U-1; i++ )
+		a[i] = new float[M+V-1];
+	for ( unsigned int i = 0; i < N+U-1; i++ )
+		for ( unsigned int j = 0; j < M+V-1; j++ )
+			a[i][j] = static_cast<float>(sq_rand() / SQ_RAND_MAX);
+
+	float** h = new float*[U];
+	for ( unsigned int i = 0; i < U; i++ )
+		h[i] = new float[V];
+	for ( unsigned int i = 0; i < U; i++ )
+		for ( unsigned int j = 0; j < V; j++ )
+			h[i][j] = static_cast<float>(sq_rand() / SQ_RAND_MAX);
+
+	float** c1 = new float*[N];
+	float** c2 = new float*[N];
+	for ( unsigned int i = 0; i < N; i++ )
+	{
+		c1[i] = new float[M];
+		c2[i] = new float[M];
+	}
+	
+	for ( unsigned int i = 0; i < N; i++ )
+		for ( unsigned int j = 0; j < M; j++ )
+			c1[i][j] = c2[i][j] = static_cast<float>(sq_rand() / SQ_RAND_MAX);
+
+	start_usec = sq_gettimeofday();
+	conv2d(a, h, c1);
+	end_usec = sq_gettimeofday();
+	sequoia_usec = end_usec - start_usec;
+
+	sq_printf("Sequoia total conv2d running time: %.4f usec -- %.4f GFLOPS"
+		" -- %.4f GB/s\n",
+		sequoia_usec,
+		sq_compute_gflops_from_usec(numOps, (float)sequoia_usec),
+		sq_compute_gbsec_from_usec(numXfer, (float)sequoia_usec));
+
+	reference(a, h, c2, M, N, U, V);
+
+	if ( verify(c1, c2, N, M) )
+		sq_printf("SUCCESS: Sequoia implementation matches reference implementation!\n");
+	else
+		sq_printf("ERROR: Sequoia implementation does not match reference implementation!\n");
+
+	for ( unsigned int i = 0; i < N+U-1; i++ )
+		delete [] a[i];
+	delete [] a;
+	
+	for ( unsigned int i = 0; i < U; i++ )
+		delete [] h[i];
+	delete [] h;
+	
+	for ( unsigned int i = 0; i < N; i++ )
+	{
+		delete [] c1[i];
+		delete [] c2[i];
+	}
+	delete [] c1;
+	delete [] c2;
+
+	return 0;
+}
+
+bool verify(float** c1, float** c2, unsigned int N, unsigned int M)
+{
+	for ( unsigned int i = 0; i < N; i++ )
+		for ( unsigned int j = 0; j < M; j++ )
+			if ( c1[i][j] != c2[i][j] )
+			{	
+				sq_printf("c1[%d][%d] = %f != c2[%d][%d] = %f\n", i, j, c1[i][j], i, j, c2[i][j]);
+				return false;
+			}
+				
+	return true;
+}

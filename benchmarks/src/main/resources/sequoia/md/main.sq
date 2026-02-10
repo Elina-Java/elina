@@ -1,0 +1,157 @@
+/*******************************************************************************
+ * Copyright (c) 2010,
+ *   The Board of Trustees of The Leland Stanford Junior University
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ * 
+ * 3. The names of the contributors may not be used to endorse or promote
+ * products derived from this software without specific prior written
+ * permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ ******************************************************************************/
+
+#include "../../external/include/sq_cmath.h"
+#include "../../external/include/sq_cstdio.h"
+#include "../../external/include/sq_cstdlib.h"
+#include "../../external/include/sq_ctime.h"
+
+#include "constants.h"
+#include "md.h"
+#include "reference.h"
+#include "types.h"
+
+void getSnapshot(Float3* pos, Float3* vel, float* mass);
+float calculateEnergy(Float3* pos, Float3* vel, float* mass);
+
+int main()
+{
+	Float3* pos = new Float3[ARRAY_SIZE];
+	Float3* vel = new Float3[ARRAY_SIZE];
+	float* mass = new float[ARRAY_SIZE];
+
+	getSnapshot(pos, vel, mass);
+	
+	Float3* posRef = new Float3[ARRAY_SIZE];
+	Float3* velRef = new Float3[ARRAY_SIZE];
+	float* massRef = new float[ARRAY_SIZE];
+	
+	double numOps = (((double)N_STEPS-1) *
+		(ARRAY_SIZE*ARRAY_SIZE*25. + ARRAY_SIZE * 12. + ARRAY_SIZE*9.)+
+		ARRAY_SIZE*ARRAY_SIZE*25.) /(1000. * 1000.); 
+	double numXfer = (120.0*(double)ARRAY_SIZE+(72.0/512.0)*
+		((double)ARRAY_SIZE*(double)ARRAY_SIZE))*N_STEPS+
+		(72.0/512.0)*((double)ARRAY_SIZE*(double)ARRAY_SIZE);
+	sq_microsecond_t start_usec, end_usec, sequoia_usec;
+
+	for ( unsigned int i = 0; i < ARRAY_SIZE; i++ )
+	{
+		posRef[i] = pos[i];
+		velRef[i] = vel[i];
+		massRef[i] = mass[i];
+	}
+	
+	float energyInit = calculateEnergy(pos, vel, mass);
+	sq_printf("Initial:   %f\n", energyInit);
+	
+	start_usec = sq_gettimeofday();
+	run(pos, vel, mass, N_STEPS);
+	end_usec = sq_gettimeofday();
+	sequoia_usec = end_usec - start_usec;
+
+        sq_printf("Sequoia total md running time: %.4f usec -- %.4f GFLOPS"
+                " -- %.4f GB/se\n",
+                sequoia_usec,
+                sq_compute_gflops_from_usec(numOps, (float)sequoia_usec),
+                sq_compute_gbsec_from_usec(numXfer, (float)sequoia_usec));
+
+
+	float energy = calculateEnergy(pos, vel, mass);
+	sq_printf("Energy:    %f\n", energy);
+
+	mdRef(posRef, velRef, massRef, ARRAY_SIZE, N_STEPS);
+	float energyRef = calculateEnergy(posRef, velRef, massRef);
+	sq_printf("Reference: %f\n", energyRef);
+
+	float deviation = sq_fabs((energy - energyRef) / energyRef);
+	sq_printf("Deviation: %f\n", deviation);
+
+	if ( deviation < 0.05 )
+		sq_printf("SUCCESS: Results are close enough!\n");
+	else
+		sq_printf("ERROR: Results are not close enough!\n");
+
+	delete [] pos;
+	delete [] vel;
+	delete [] mass;
+	
+	delete [] posRef;
+	delete [] velRef;
+	delete [] massRef;
+
+	return 0;
+}
+
+void getSnapshot(Float3* pos, Float3* vel, float* mass)
+{
+	for ( unsigned int i = 0; i < ARRAY_SIZE; i++ )
+	{
+		pos[i].x = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+		pos[i].y = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+		pos[i].z = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+
+		mass[i] = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+
+		vel[i].x = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+		vel[i].y = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+		vel[i].z = static_cast<float>(sq_rand()) / static_cast<float>(SQ_RAND_MAX);
+	}
+}
+
+float calculateEnergy(Float3* pos, Float3* vel, float* mass)
+{
+	float potential = 0.0;
+	for ( unsigned int i = 0; i < ARRAY_SIZE; i++ )
+		for ( unsigned int j = i + 1; j < ARRAY_SIZE; j++ )
+		{
+			Float3 r3;
+			r3.x = pos[i].x - pos[j].x;
+			r3.y = pos[i].y - pos[j].y;
+			r3.z = pos[i].z - pos[j].z;
+			float r = sq_sqrt(r3.x*r3.x + r3.y*r3.y + r3.z*r3.z + EPS);
+			potential -= mass[i] * mass[j] / r;
+		}
+
+	float kinetic = 0.0;
+	for ( unsigned int i = 0; i < ARRAY_SIZE; i++ )
+	{
+		Float3 v3;
+		v3.x = vel[i].x;
+		v3.y = vel[i].y;
+		v3.z = vel[i].z;
+
+		float v = v3.x*v3.x + v3.y*v3.y + v3.z*v3.z;
+		kinetic += 0.5 * mass[i]*v;
+	}
+
+	return kinetic + potential;
+}

@@ -1,0 +1,6 @@
+	<modifiers> <type_parameters> <return_type> <name> (<params>) <throws> {
+		core.collective.Distribution<<distribution_type>> dist = new <distribution>;
+		core.collective.Reduction<<reduction_type>> red = new <reduction>;
+		
+		return distReduce(<task>, red, dist).get();
+	}

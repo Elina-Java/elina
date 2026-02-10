@@ -1,0 +1,19 @@
+<package>
+
+/*GENERATED CLASS - DO NOT EDIT*/
+
+<imports>
+
+@instrumentation.definitions.Generated
+public <abstract> class <class_name> <type_parameters> extends <super_class> <interfaces>{
+
+	private static final long serialVersionUID = 1L;
+
+	<fields>
+
+	<constructor>
+
+	<method>
+	
+	<innerClass>
+}

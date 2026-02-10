@@ -1,0 +1,16 @@
+{
+    "siblings": [[0,2,4,6],[1,3,5,7]],
+    "size": 6291456,
+    "cacheLineSize": 64,
+    "child": {
+    	"siblings": [[0],[1],[2],[3],[4],[5],[6],[7]],
+        "size": 524288,
+        "cacheLineSize": 64,
+        "child": {
+            "siblings": [[0],[1],[2],[3],[4],[5],[6],[7]],
+            "size": 65536,
+            "cacheLineSize": 64,
+            "child": null
+        }
+    }
+}

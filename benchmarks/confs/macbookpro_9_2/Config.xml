@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="sable" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="sable config.xsd" debug="false">
+	
+		<middleware> 
+		<nodes>
+			<node>127.0.0.1</node>
+		</nodes>
+		 
+	</middleware>
+	
+	<drivers>
+		<logging>logging.Log4J</logging>
+		<communication>communication.NIOCom</communication>
+		<synchronization>synchronization.MonitorDriverLock</synchronization>
+		<barrier>synchronization.JavaBarrier</barrier>
+		<copy>cloning.DeepCopy</copy>
+		<consistencyModel>consistency.strict</consistencyModel>
+		<domainDecomposition_levels>
+			<domainDecomposition_level level="Node">domainDecomposition.HierarchicalDomainDecomposer</domainDecomposition_level>
+			<domainDecomposition_level level="Cluster">domainDecomposition.HierarchicalDomainDecomposer</domainDecomposition_level>
+		</domainDecomposition_levels>
+		<scheduling rank="scheduling.rank.RandomRank">scheduling.RoundRobin</scheduling>
+		<taskExecutor nWorkers="2">TaskExecutor.TaskExecutorPoolThreads</taskExecutor>
+		<hierarchyReader>hierarchy.readers.HierarchyReadImpl</hierarchyReader>
+		<partitioner>partitioners.L1IterativePartitioner</partitioner>
+		<affinityMapper>affinity.AllAffinity</affinityMapper>
+		<aggregator>aggregation.ContiguousScheduler</aggregator>
+	</drivers>
+</config>

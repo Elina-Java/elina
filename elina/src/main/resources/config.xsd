@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:sa="sable" targetNamespace="sable" xmlns="sable"
+	elementFormDefault="qualified">
+	<!-- Importar os tipo de dados -->
+	<xs:include schemaLocation="tipos.xsd"/>
+
+	<!-- Configuração de drivers -->
+	<xs:complexType name="drivers">
+		<xs:sequence>
+			<xs:element name="logging" type="logging_driver" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="communication" type="comm_driver" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="synchronization" type="sync_driver" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="barrier" type="sync_barrier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="copy" type="copy_driver" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="consistencyModel" type="consistency_driver" minOccurs="1" maxOccurs="1"/>
+			<xs:choice minOccurs="1" maxOccurs="1">
+				<xs:element name="distrReduce" type="distrRed_driver_simple" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="domainDecomposition_levels">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="domainDecomposition_level" type="distrRed_driver_level" minOccurs="1" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+			<xs:element name="scheduling" type="scheduling_driver" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="taskExecutor" type="taskExecutor_driver" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="hierarchyReader" type="hierarchyReader_driver" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="partitioner" type="partitioner_driver" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="debugging" type="debugging_driver" minOccurs="0" maxOccurs="1"/>
+		       <xs:element name="affinityMapper" type="affinity_driver" minOccurs="0" maxOccurs="1"/>
+		       <xs:element name="aggregator" type="aggregation_driver" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Elemento para configurações do middleware (para uso futuro) -->
+	<xs:complexType name="middleware">
+		<xs:sequence>
+			<xs:element name="nodes" type="nodes" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="config">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="middleware" type="middleware" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="drivers" type="drivers" minOccurs="1" maxOccurs="1"/>
+			</xs:sequence>
+			<xs:attribute name="debug" type="xs:boolean" use="optional" default="false"/>
+		</xs:complexType>
+
+
+		<xs:unique name="uniqueNodes">
+			<xs:selector xpath="sa:middleware/sa:nodes/sa:node"/>
+			<xs:field xpath="@port"/>
+			<xs:field xpath="."/>
+		</xs:unique>
+		
+		<xs:unique name="domainDecomposition_levels">
+			<xs:selector xpath="sa:drivers/sa:domainDecomposition_levels/sa:domainDecomposition_level"/>
+			<xs:field xpath="@level"/>
+		</xs:unique>
+		
+	</xs:element>
+</xs:schema>

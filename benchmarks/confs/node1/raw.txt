@@ -1,0 +1,7 @@
+node 1:
+	procs: 2 x Quad-Core AMD Opteron(tm) Processor 2376
+	siblings: 0,2,4,6 --- 1,3,5,7
+	cache:	
+		L3 - 6144K - partilhada por 4 cores:  0,2,4,6  :  1,3,5,7  	
+		L2 - 512k - dedicada	
+		L1 - 64K - dedicada
