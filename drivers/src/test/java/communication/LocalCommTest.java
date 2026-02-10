@@ -1,7 +1,8 @@
 package communication;
 
-import static org.junit.Assert.assertEquals;
 import elina.tests.BaseTest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class LocalCommTest extends BaseTest {
 

@@ -1,7 +1,7 @@
 package cloning;
 
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import com.rits.cloning.Cloner;
 
 import drivers.CloningDriver;
@@ -11,7 +11,7 @@ public class DeepCopy
 implements CloningDriver{
 
 	private Cloner cloner;
-	private static Logger logger = Logger.getLogger(DeepCopy.class);
+	private static Logger logger = LogManager.getLogger(DeepCopy.class);
 	
 	public DeepCopy()
 	{

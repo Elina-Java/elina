@@ -1,1 +1,13 @@
-apply plugin: "java"
+dependencies {
+
+    // Use JUnit test framework
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+    testImplementation("org.junit.platform:junit-platform-suite:1.11.0" )
+
+    implementation project(':elina')
+
+    implementation "net.sf.flexjson:flexjson:3.3"
+    implementation("uk.com.robust-it:cloning:1.9.12")
+    implementation("org.apache.logging.log4j:log4j-core:2.25.3")
+}

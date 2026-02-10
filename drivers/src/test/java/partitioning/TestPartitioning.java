@@ -1,15 +1,17 @@
 package partitioning;
 
-import static org.junit.Assert.assertTrue;
+
 import hierarchy.HierarchySerializeTest;
 
-import org.junit.Before;
-import org.junit.Test;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import partitioners.L1IterativePartitioner;
 import service.SOMDTask;
 import core.collective.Distribution;
 import drivers.HierarchyLevel;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestPartitioning {
 	
@@ -76,7 +78,7 @@ public class TestPartitioning {
 	private Distribution<Integer[]> dist1;
 	
 	@SuppressWarnings("unchecked")
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		dist1 = new TestDistribution(1000000);

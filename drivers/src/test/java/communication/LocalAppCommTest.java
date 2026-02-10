@@ -1,10 +1,12 @@
 package communication;
 
-import static org.junit.Assert.assertEquals;
+
 import service.Application;
 import service.RemoteException;
 import elina.ApplicationLauncher;
 import elina.tests.BaseTest;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class LocalAppCommTest extends BaseTest {
 

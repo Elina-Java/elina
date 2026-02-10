@@ -20,8 +20,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import service.Future;
 import service.IFuture;
 import service.IService;
@@ -57,7 +57,7 @@ public final class TaskExecutorPoolThreads extends ThreadPoolExecutor implements
 	/**
 	 * The logger
 	 */
-	private static Logger logger = Logger.getLogger(TaskExecutorPoolThreads.class);
+	private static Logger logger = LogManager.getLogger(TaskExecutorPoolThreads.class);
 
 	/**
 	 * Map of futures into tasks

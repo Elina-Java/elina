@@ -1,6 +1,14 @@
-apply plugin: "java"
 
 dependencies {
 
+    // Use JUnit test framework
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+
+
+
     implementation 'javax.jws:javax.jws-api:1.1'
+    implementation "net.sf.flexjson:flexjson:3.3"
+    implementation 'org.ow2.asm:asm-commons:4.0'
+    implementation("org.kohsuke.metainf-services:metainf-services:1.11")
 }

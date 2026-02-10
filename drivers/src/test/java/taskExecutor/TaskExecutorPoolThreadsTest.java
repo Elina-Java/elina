@@ -1,18 +1,19 @@
 package taskExecutor;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.BeforeClass;
 
 import core.Place;
 import elina.ApplicationLauncher;
 import elina.Elina;
+import org.junit.jupiter.api.BeforeAll;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TaskExecutorPoolThreadsTest {
 
 	private static Place place;
 	
-	@BeforeClass
+	@BeforeAll
 	 public static void launchElina() {
 		ApplicationLauncher.init();
 		place = Elina.getPlace();

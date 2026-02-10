@@ -6,15 +6,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import core.communication.Node;
 import core.scheduling.SchedulingRankAdapter;
 import elina.Elina;
 
 public class RandomRank implements SchedulingRankAdapter {
 
-	private static Logger logger = Logger.getLogger(RandomRank.class);
+	private static Logger logger = LogManager.getLogger(RandomRank.class);
 	
 	@Override
 	public List<Node<?>> sort(List<Node<?>> nodes) {

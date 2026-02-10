@@ -1,22 +1,23 @@
 package cluster.echo;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.MalformedURLException;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runners.Suite.SuiteClasses;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 import service.Application;
 import service.RemoteException;
 import service.Service;
 import elina.ApplicationLauncher;
 
-@SuiteClasses( { EchoProvider.class, Client.class })
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Suite
+@SelectClasses( { EchoProvider.class, Client.class })
 public class Client extends Application {
 
-	@BeforeClass
+	@BeforeAll
 	public  static void echoClient() throws MalformedURLException, RemoteException {
 		ApplicationLauncher.init("127.0.0.1");
 		Client c = new Client();

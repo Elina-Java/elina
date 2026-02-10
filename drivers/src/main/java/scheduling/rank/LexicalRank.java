@@ -5,7 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import core.communication.Node;
 import core.scheduling.SchedulingRankAdapter;
@@ -13,7 +14,7 @@ import elina.Elina;
 
 public class LexicalRank implements SchedulingRankAdapter {
 
-	private static Logger logger = Logger.getLogger(RandomRank.class);
+	private static final Logger logger = LogManager.getLogger(RandomRank.class);
 	
 	@Override
 	public List<Node<?>> sort(List<Node<?>> nodes) {

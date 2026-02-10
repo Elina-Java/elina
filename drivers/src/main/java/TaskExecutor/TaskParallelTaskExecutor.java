@@ -22,8 +22,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import service.Future;
 import service.IFuture;
 import service.IService;
@@ -61,7 +61,7 @@ public final class TaskParallelTaskExecutor extends ThreadPoolExecutor implement
 	/**
 	 * The logger
 	 */
-	private static Logger logger = Logger.getLogger(TaskParallelTaskExecutor.class);
+	private static Logger logger = LogManager.getLogger(TaskParallelTaskExecutor.class);
 
 	/**
 	 * Map of futures into tasks

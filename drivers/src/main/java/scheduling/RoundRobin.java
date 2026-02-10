@@ -12,8 +12,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import service.Application;
 import service.IService;
 import service.Service;
@@ -24,7 +24,7 @@ import elina.Elina;
 
 public class RoundRobin implements SchedulingAdapter {
 
-	private static Logger logger = Logger.getLogger(RoundRobin.class);
+	private static Logger logger = LogManager.getLogger(RoundRobin.class);
 
 	@Override
 	@SuppressWarnings("rawtypes")

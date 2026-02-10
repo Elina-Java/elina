@@ -1,17 +1,20 @@
 package hierarchy;
 
-import static org.junit.Assert.assertTrue;
 import hierarchy.readers.HierarchyReadImpl;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.junit.Test;
+
 
 import drivers.HierarchyLevel;
 import drivers.HierarchyReadDriver;
 import flexjson.JSONSerializer;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HierarchySerializeTest {
 
@@ -65,7 +68,7 @@ public class HierarchySerializeTest {
 	{
 		HierarchyReadDriver hrd = new HierarchyReadImpl();
 		HierarchyLevel hl = hrd.getHierarchyRoot("hierarchy1.json");
-		assertTrue(hl.size==getTestHierarchy1().size);
+        assertEquals(hl.size, getTestHierarchy1().size);
 		File f = new File("hierarchy1.json");
 		f.delete();
 	}

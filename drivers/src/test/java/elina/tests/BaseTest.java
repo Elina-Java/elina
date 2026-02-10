@@ -2,9 +2,10 @@ package elina.tests;
 
 import java.io.File;
 
-import org.junit.Test;
+
 
 import elina.ApplicationLauncher;
+import org.junit.jupiter.api.Test;
 
 public abstract class BaseTest {
 

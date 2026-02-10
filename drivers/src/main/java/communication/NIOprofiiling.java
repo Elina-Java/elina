@@ -16,8 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import core.Utils;
 import core.communication.CommunicationModule;
 import core.communication.IComEvent;
@@ -45,7 +45,7 @@ public class NIOprofiiling extends NIOCom {
 
 	private Map<UUID, IComEvent> events = new HashMap<UUID, IComEvent>();
 	
-	private Logger logger = Logger.getLogger(this.getClass());
+	private Logger logger = LogManager.getLogger(this.getClass());
 	
 	private DataOutputStream profiling;
 	

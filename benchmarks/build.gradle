@@ -1,1 +1,8 @@
 apply plugin: "java"
+
+dependencies {
+    implementation project(':elina')
+    implementation project(':drivers')
+
+    implementation files('lib/mpj.jar')
+}
